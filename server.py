@@ -1,6 +1,13 @@
 import socket
 import argparse
-import pickle
+from packet import *
+
+# import pickle
+# import os
+#
+#
+# def getFileSize(file):
+#     return os.stat(file).st_size
 
 
 def main():
@@ -19,28 +26,31 @@ def main():
     if args['a']:
         hostName = args['a']
     else:
-        hostName = 'localhost'
+        hostName = '127.0.0.1'
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sAddr = (hostName, port)
 
-    print('Starting server on %s on port %s' % sAddr)
+    print('Starting server on: ' + hostName + ' on port: ' + str(port) + '.')
     sock.bind(sAddr)
     sock.listen(2)
 
     while True:
-        print("Im wating here...")
+        print('Im wating here...')
         connection, cAddr = sock.accept()
 
         try:
-            print("Connection from: %s" % cAddr)
-            request = (connection.recv(1024)).decode()
+            print('Connection from: ' + str(cAddr))
+            request = (connection.recv(516))
+            file = 'new' + request.fileName
 
             if request.read:
                 # read file
                 # connection.send(file.encode())
                 print('on it')
+
                 fileObject = open(file, 'rb')
+                newtempfile = pickle.load(fileObject)
 
                 try:
                     byte = fileObject.read(1)
@@ -56,18 +66,18 @@ def main():
                 print('umm sure man')
                 fileObject = open(file + "new", 'wb')
 
-                a = pickle.dump(fileObject)
-                fileObject.close()
-                connection.send(a)
+                # a = pickle.dump(fileObject)
+                # fileObject.close()
+                # connection.send(a)
 
-                # try:
-                #     byte = bytearray(fileObject.read(1))
-                #     while byte != "":
-                #         fileObject.write(byte)
-                #     byte = bytearray(fileObject.read(1))
-                #
-                # finally:
-                #     fileObject.close()
+                try:
+                    byte = bytearray(fileObject.read(1))
+                    while byte != "":
+                        fileObject.write(byte)
+                        byte = bytearray(fileObject.read(1))
+
+                finally:
+                    fileObject.close()
 
             else:
                 print("Error: unknown request. \nExiting.")

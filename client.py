@@ -1,31 +1,7 @@
 import socket
 import argparse
 import pickle
-
-
-class TFTPPacket:
-
-    def __init__(self):
-        self.address = '127.0.0.1'c
-        self.portNum = 5001
-        self.read = False
-        self.write = False
-        self.fileName = ''
-
-    def setAddress(self, add):
-        self.address = add
-
-    def setPortNum(self, port):
-        self.portNum = port
-
-    def setRead(self):
-        self.read = True
-
-    def setWrite(self):
-        self.write = True
-
-    def setFileName(self, name):
-        self.fileName = name
+from packet import *
 
 
 def main():
@@ -39,11 +15,11 @@ def main():
 
     args = vars(parser.parse_args())
 
-    packet = TFTPPacket()
+    request = Request()
 
     if args['f']:
         # use as file name
-        packet.setFileName(args['f'])
+        request.setFileName(args['f'])
 
     else:
         # error out
@@ -55,28 +31,36 @@ def main():
         print("You cannot read and write at the same time. Duh.")
         exit(1)
 
+    elif not(args['w']) and not(args['r']):
+        # error out
+        print("No read or write operation chosen. Goodbye.")
+        exit(1)
+
     elif args['w']:
         # set write flag to true
-        packet.setWrite()
+        request.setWrite()
 
     else:
         # set read flag to true
-        packet.setRead()
+        request.setRead()
 
     if args['a']:
         # use as hostname
-        packet.setAddress(args['a'])
+        request.setAddress(args['a'])
 
     if args['p']:
         # use as port number
-        portNum = args['p']
+        request.setPortNum(args['p'])
 
     sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
-    sAddr = (packet.address, packet.portNum)
+    sAddr = (request.address, request.portNum)
 
     sock.connect(sAddr)
+    a = pickle.dumps(request)
+    sock.send(a)
 
+    # TODO
     # the guts of the program
 
 
