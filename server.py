@@ -1,13 +1,7 @@
 import socket
 import argparse
+import pickle
 from packet import *
-
-# import pickle
-# import os
-#
-#
-# def getFileSize(file):
-#     return os.stat(file).st_size
 
 
 def main():
@@ -41,29 +35,38 @@ def main():
 
         try:
             print('Connection from: ' + str(cAddr))
-            request = (connection.recv(516))
-            file = 'new' + request.fileName
+            request = b""
 
-            if request.read:
+            while True:
+                packet = connection.recv(516)
+                if not packet: break
+                request += packet
+
+            unpickledreq = pickle.loads(request)
+
+            if unpickledreq.read:
                 # read file
-                # connection.send(file.encode())
                 print('on it')
-
+                file = unpickledreq.fileName
                 fileObject = open(file, 'rb')
-                newtempfile = pickle.load(fileObject)
 
                 try:
+                    item = b''
                     byte = fileObject.read(1)
-                    while byte != "":
-                        connection.send(byte.encode())
+                    while byte:
+                        item += byte
                         byte = fileObject.read(1)
+
+                    itemToSend = pickle.dumps(item)
+                    connection.sendall(itemToSend)
 
                 finally:
                     fileObject.close()
 
-            elif request.write:
+            elif unpickledreq.write:
                 # write to file
                 print('umm sure man')
+                file = unpickledreq.fileName
                 fileObject = open(file + "new", 'wb')
 
                 # a = pickle.dump(fileObject)

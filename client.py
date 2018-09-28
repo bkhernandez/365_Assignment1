@@ -57,11 +57,29 @@ def main():
     sAddr = (request.address, request.portNum)
 
     sock.connect(sAddr)
-    a = pickle.dumps(request)
-    sock.send(a)
+    sendRequest = pickle.dumps(request)
+    sock.sendall(sendRequest)
 
     # TODO
     # the guts of the program
+    if request.read:
+
+        itemRecv = sock.recv(516)
+        file = request.fileName
+        fileObject = open(file, 'rb')
+        item = b''
+
+        while byte:
+            item += byte
+            byte = fileObject.read(1)
+
+        response = pickle.loads(item)
+
+        print(response)
+
+    if request.write:
+        # dooo stuff
+        pass
 
 
 main()
