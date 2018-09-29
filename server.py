@@ -2,6 +2,7 @@ import socket
 import argparse
 import pickle
 from packet import *
+from fileio import *
 
 
 def main():
@@ -45,42 +46,13 @@ def main():
             unpickledreq = pickle.loads(request)
 
             if unpickledreq.read:
-                # read file
-                print('on it')
-                file = unpickledreq.fileName
-                fileObject = open(file, 'rb')
-
-                try:
-                    item = b''
-                    byte = fileObject.read(1)
-                    while byte:
-                        item += byte
-                        byte = fileObject.read(1)
-
-                    itemToSend = pickle.dumps(item)
-                    connection.sendall(itemToSend)
-
-                finally:
-                    fileObject.close()
+                sendBack = readFile(unpickledreq)
+                connection.sendall(sendBack)
 
             elif unpickledreq.write:
                 # write to file
-                print('umm sure man')
-                file = unpickledreq.fileName
-                fileObject = open(file + "new", 'wb')
-
-                # a = pickle.dump(fileObject)
-                # fileObject.close()
-                # connection.send(a)
-
-                try:
-                    byte = bytearray(fileObject.read(1))
-                    while byte != "":
-                        fileObject.write(byte)
-                        byte = bytearray(fileObject.read(1))
-
-                finally:
-                    fileObject.close()
+                sendBack = writeFile(unpickledreq)
+                connection.sendall(sendBack)
 
             else:
                 print("Error: unknown request. \nExiting.")
